@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predict News</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>Predict News</h1>
+    </div>
+    <div class="hamburger-menu">
+        <input type="checkbox" id="menu-toggle"/>
+        <label for="menu-toggle" class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav class="menu">
+            <a href="/">Home</a>
+            <a href="/news">Articles</a>
+            <a href="/predict">Predict</a>
+            <a href="/statistics">Statistics</a>
+            <a href="/about">About</a>
+        </nav>
+    </div>
+    <div class="form-container">
+        <form action="/predict" method="POST">
+            <textarea name="news" rows="10" cols="50" placeholder="Enter news article text here..." required>{{ prefill_news if prefill_news else '' }}</textarea>
+            <br>
+            <input type="text" name="news_url" placeholder="Enter news article URL here..." value="{{ prefill_url if prefill_url else '' }}" required>
+            <input type="hidden" name="news_title" value="{{ news_title if news_title else '' }}">
+            <button type="submit">Predict</button>
+        </form>
+    </div>
+    {% if prediction %}
+    <div class="prediction-result">
+        <h2>Prediction: {{ prediction }}</h2>
+        <h2>Confidence: {{ confidence }}</h2>
+    </div>
+    {% endif %}
+    <div class="button-container">
+        <button onclick="window.location.href='/'">Back to Home</button>
+    </div>
+    <button id="theme-toggle" class="theme-toggle-btn">Light</button>
+
+    <div class="disclaimer">
+        <p>Disclaimer: This tool is for educational purposes only. Please respect the terms of service of the websites you analyze.</p>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        function setTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                toggleBtn.textContent = 'Dark';
+            } else {
+                document.body.classList.remove('light-theme');
+                toggleBtn.textContent = 'Light';
+            }
+            localStorage.setItem('theme', theme);
+        }
+        toggleBtn.addEventListener('click', () => {
+            const isLight = document.body.classList.contains('light-theme');
+            setTheme(isLight ? 'dark' : 'light');
+        });
+        // On page load, set theme from localStorage
+        setTheme(localStorage.getItem('theme') || 'dark');
+    </script>
+</body>
+</html>
+

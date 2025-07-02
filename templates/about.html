@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About me</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>About me</h1>
+    </div>
+    <div class="hamburger-menu">
+        <input type="checkbox" id="menu-toggle"/>
+        <label for="menu-toggle" class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav class="menu">
+            <a href="/">Home</a>
+            <a href="/news">Articles</a>
+            <a href="/predict">Predict</a>
+            <a href="/statistics">Statistics</a>
+            <a href="/about">About</a>
+        </nav>
+    </div>
+    <div class="content">
+        <h4>My name is Matin and I am 28 years old.</h4>
+        <p>I am a student at Teknikhögskolan in Västerås, Sweden.</p>
+        <p>I am currently studying Python development with a focus on AI and machine learning.</p>
+        <p>I am interested in machine learning and artificial intelligence.</p>
+        <p>I am also interested in web development and web design.</p></p>
+    </div>
+    <div class="button-container">
+        <button onclick="window.location.href='/'">Back to Home</button>
+    </div>
+    <button id="theme-toggle" class="theme-toggle-btn">Light</button>
+
+        <script>
+            const toggleBtn = document.getElementById('theme-toggle');
+            function setTheme(theme) {
+                if (theme === 'light') {
+                    document.body.classList.add('light-theme');
+                    toggleBtn.textContent = 'Dark';
+                } else {
+                    document.body.classList.remove('light-theme');
+                    toggleBtn.textContent = 'Light';
+                }
+                localStorage.setItem('theme', theme);
+            }
+            toggleBtn.addEventListener('click', () => {
+                const isLight = document.body.classList.contains('light-theme');
+                setTheme(isLight ? 'dark' : 'light');
+            });
+            // On page load, set theme from localStorage
+            setTheme(localStorage.getItem('theme') || 'dark');
+            </script>
+</body>
+</html>

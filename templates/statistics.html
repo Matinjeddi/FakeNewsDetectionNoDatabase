@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>Statistics</h1>
+    </div>
+    <div class="hamburger-menu">
+        <input type="checkbox" id="menu-toggle"/>
+        <label for="menu-toggle" class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav class="menu">
+            <a href="/">Home</a>
+            <a href="/news">Articles</a>
+            <a href="/predict">Predict</a>
+            <a href="/statistics">Statistics</a>
+            <a href="/about">About</a>
+        </nav>
+    </div>
+    <div class="statistics-container">
+        {% if predictions %}
+            <h2>Prediction Statistics</h2>
+            <p>Total predictions: {{ predictions|length }}</p>
+            <p>Mean confidence: {{ "%.2f"|format(mean_confidence) }}%</p>
+            <p>Real news: {{ true_count }}</p>
+            <p>Fake news: {{ false_count }}</p>
+            
+            <!-- Chart -->
+            <canvas id="predictionChart"></canvas>
+            <script>
+                const chartTextColor = '#ff6600';
+                const ctx = document.getElementById('predictionChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Real News', 'Fake News'],
+                        datasets: [{
+                            data: [{{ true_count }}, {{ false_count }}],
+                            backgroundColor: ['#4CAF50', '#f44336'],
+                            borderColor: ['#388E3C', '#D32F2F'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: chartTextColor
+                                }
+                            }
+                        }
+                    }
+                });
+            </script>
+        {% else %}
+            <p>No predictions available yet.</p>
+        {% endif %}
+    </div>
+            <!-- Display paginated predictions -->
+            <div class="predictions-list">
+                <h3>Recent Predictions</h3>
+                {% for prediction in predictions %}
+                    <div class="prediction-item">
+                        <p>{{ prediction["news_title"] }}</p>
+                        <p>Date: {{ prediction["date"] }}</p>
+                        <p>Prediction: {{ prediction["prediction"] }}</p>
+                        <p>Confidence: {{ prediction["confidence"] }}</p>
+                        <p>URL:<a href="{{ prediction["url"] }}" target="_blank">{{ prediction["url"] }}</a></p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination controls -->
+            <div class="pagination-controls">
+                {% if pagination.has_prev %}
+                    <a href="{{ url_for('statistics', page=pagination.prev_num) }}" class="pagination-btn">Previous</a>
+                {% endif %}
+                
+                <span class="pagination-info">Page {{ page }} of {{ pagination.pages }}</span>
+                
+                {% if pagination.has_next %}
+                    <a href="{{ url_for('statistics', page=pagination.next_num) }}" class="pagination-btn">Next</a>
+                {% endif %}
+            </div>
+
+            
+    <div class="button-container">
+        <button onclick="window.location.href='/'">Back to Home</button>
+    </div>
+    <button id="theme-toggle" class="theme-toggle-btn">Light</button>
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        function setTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                toggleBtn.textContent = 'Dark';
+            } else {
+                document.body.classList.remove('light-theme');
+                toggleBtn.textContent = 'Light';
+            }
+            localStorage.setItem('theme', theme);
+        }
+        toggleBtn.addEventListener('click', () => {
+            const isLight = document.body.classList.contains('light-theme');
+            setTheme(isLight ? 'dark' : 'light');
+        });
+        // On page load, set theme from localStorage
+        setTheme(localStorage.getItem('theme') || 'dark');
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Articles</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <h1>News Articles</h1>
+    </div>
+    <div class="hamburger-menu">
+        <input type="checkbox" id="menu-toggle"/>
+        <label for="menu-toggle" class="menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </label>
+        <nav class="menu">
+            <a href="/">Home</a>
+            <a href="/news">Articles</a>
+            <a href="/predict">Predict</a>
+            <a href="/statistics">Statistics</a>
+            <a href="/about">About</a>
+        </nav>
+    </div>
+    <div class="news-container">
+        <div class="query-container">
+            <form action="{{ url_for('news') }}" method="POST">
+                <input type="text" name="query" placeholder="Search for news" value="{{ current_query }}">
+                <button type="submit">Search</button>
+                <select name="sort_by">
+                    <option value="relevancy" {% if current_sort == 'relevancy' %}selected{% endif %}>Relevancy</option>
+                    <option value="publishedAt" {% if current_sort == 'publishedAt' %}selected{% endif %}>Date</option>
+                    <option value="popularity" {% if current_sort == 'popularity' %}selected{% endif %}>Popularity</option>
+                </select>
+            </form>
+        </div>
+        <div class="news-list">
+            <ul>
+                {% for news in news_articles %}
+                <li>
+                    <h2>{{news.title}}</h2>
+                    <p class="category">Description:</p>
+                    <p>{{news.description}}</p>
+                    <img src="{{news.urlToImage}}" 
+                    alt="News Image" 
+                    style="width: 200px; height: 200px; object-fit: cover;"
+                    onerror="this.onerror=null; this.src='{{ url_for('static', filename='img/news.jpg') }}';">
+                    <p class="category">Date: <p>{{news.publishedAt}}</p></p>
+                    <p class="category">URL: <a href="{{news.url}}" target="_blank" rel="noopener noreferrer">{{news.url}}</a></p>
+                    <form action="/fetch_article" method="POST" style="margin-top: 0.5rem;">
+                        <input type="hidden" name="news_title" value="{{news.title}}">
+                        <input type="hidden" name="article_url" value="{{news.url}}">
+                        <button type="submit">Analyze Article</button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <!-- Pagination controls -->
+        <div class="pagination-controls">
+            {% if pagination.has_prev %}
+                <a href="{{ url_for('news', page=pagination.prev_num, query=current_query, sort_by=current_sort) }}" class="pagination-btn">Previous</a>
+            {% endif %}
+            
+            <span class="pagination-info">Page {{ page }} of {{ pagination.pages }}</span>
+            
+            {% if pagination.has_next %}
+                <a href="{{ url_for('news', page=pagination.next_num, query=current_query, sort_by=current_sort) }}" class="pagination-btn">Next</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="button-container">
+        <button onclick="window.location.href='/'">Back to Home</button>
+    </div>
+    <button id="theme-toggle" class="theme-toggle-btn">Light</button>
+
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        function setTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+                toggleBtn.textContent = 'Dark';
+            } else {
+                document.body.classList.remove('light-theme');
+                toggleBtn.textContent = 'Light';
+            }
+            localStorage.setItem('theme', theme);
+        }
+        toggleBtn.addEventListener('click', () => {
+            const isLight = document.body.classList.contains('light-theme');
+            setTheme(isLight ? 'dark' : 'light');
+        });
+        // On page load, set theme from localStorage
+        setTheme(localStorage.getItem('theme') || 'dark');
+    </script>
+</body>
+</html>
+
