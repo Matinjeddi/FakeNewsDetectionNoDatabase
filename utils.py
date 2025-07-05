@@ -1,8 +1,7 @@
 import urllib.robotparser
 from urllib.parse import urlparse
-import torch
 import re
-from transformers import RobertaTokenizer, RobertaForSequenceClassification
+from transformers import pipeline
 import newsapi
 from datetime import datetime
 import pytz
@@ -15,9 +14,8 @@ load_dotenv()
 
 news_api = newsapi.NewsApiClient(api_key=os.getenv('NEWS_API_KEY'))
 
-model_path = 'matinjeddi/fake-news-roberta-base'
-tokenizer = RobertaTokenizer.from_pretrained(model_path)
-model = RobertaForSequenceClassification.from_pretrained(model_path)
+model = pipeline('text-classification', model='matinjeddi/fake-news-roberta-base')
+tokenizer = model.tokenizer
 
 def get_news(query, sort_by):
     all_articles = news_api.get_everything(q=query, language='en', sort_by=sort_by)
@@ -37,12 +35,11 @@ def get_news(query, sort_by):
     return articles
 
 def predict_news(news):
-    inputs = tokenizer(news, return_tensors='pt', padding=True, truncation=True)
-    outputs = model(**inputs)
-    predictions = torch.argmax(outputs.logits, dim=1)
-    if predictions == 1:
+    result = model(news, truncation=True, padding=True, max_length=512)
+    predictions = result[0]['label']
+    if predictions == "LABEL_1" or predictions.lower() == "real":
         return 'Real News'
-    elif predictions == 0:       
+    elif predictions == "LABEL_0" or predictions.lower() == "fake":
         return 'Fake News'
     
 def preprocess_text(text):
@@ -60,11 +57,9 @@ def preprocess_text(text):
     return text
 
 def predict_confidence(news):
-    inputs = tokenizer(news, return_tensors='pt', padding=True, truncation=True)
-    outputs = model(**inputs)
-    probabilities = torch.nn.functional.softmax(outputs.logits, dim=1)
-    confidence = torch.max(probabilities) * 100
-    return confidence.item()
+    result = model(news, truncation=True, padding=True, max_length=512)
+    confidence = result[0]['score'] * 100
+    return confidence
 
 def parse_date(d):
     if isinstance(d, datetime):
