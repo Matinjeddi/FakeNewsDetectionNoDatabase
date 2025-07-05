@@ -138,13 +138,22 @@ def signal_handler(sig, frame):
     print('Shutting down gracefully...')
     sys.exit(0)
 
-if __name__ == '__main__':
-    # Register signal handlers
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+def main():
+    # Register signal handlers if on Linux
+    if sys.platform != 'win32':
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
     
-    # Register cleanup function
     atexit.register(lambda: print('Cleaning up...'))
     
     port = int(os.environ.get("PORT", 8000))
-    app.run(host="0.0.0.0", port=port)
+
+    if sys.platform == 'win32':
+        # Run Flask dev server locally
+        app.run(host="0.0.0.0", port=port)
+    else:
+        # On Linux/Azure, don't run app.run() because Gunicorn will start the app
+        print("Running on production server - no app.run() here.")
+
+if __name__ == '__main__':
+    main()
